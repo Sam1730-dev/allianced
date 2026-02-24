@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ADIP - Portail Interactif des Statuts</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <!-- FontAwesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+
+    <style>
+        body { font-family: 'Inter', sans-serif; background-color: #ffffff; color: #1F2937; }
+        .nav-item.active { background-color: #C6F6D5; color: #2F855A; border-left: 4px solid #2F855A; }
+        .card-hover:hover { transform: translateY(-2px); box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05); }
+        .transition-all { transition-property: all; transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1); transition-duration: 300ms; }
+        
+        /* Chart Container Styling */
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+            height: 300px;
+            max-height: 400px;
+        }
+        @media (min-width: 768px) {
+            .chart-container {
+                height: 350px;
+            }
+        }
+    </style>
+</head>
+<body class="flex h-screen overflow-hidden">
+
+    <!-- Sidebar Navigation -->
+    <aside class="w-64 bg-white border-r border-gray-200 hidden md:flex flex-col z-10">
+        <div class="p-6 border-b border-gray-200 flex items-center space-x-3">
+            <div class="w-12 h-12 rounded-lg overflow-hidden flex items-center justify-center">
+                <img src="assets/logo.png" alt="Logo ADIP" class="w-full h-full object-cover">
+            </div>
+            <div>
+                <h1 class="font-bold text-gray-900 leading-tight">ADIP</h1>
+                <p class="text-xs text-gray-500">Statuts Numériques</p>
+            </div>
+        </div>
+        <nav class="flex-1 overflow-y-auto py-4">
+            <ul class="space-y-1">
+                <li>
+                    <button onclick="router('dashboard')" id="nav-dashboard" class="nav-item active w-full text-left px-6 py-3 text-sm font-medium hover:bg-green-100 transition-colors flex items-center">
+                        <i class="fas fa-home w-6 text-center mr-2"></i> Vue d'ensemble
+                    </button>
+                </li>
+                <li>
+                    <button onclick="router('members')" id="nav-members" class="nav-item w-full text-left px-6 py-3 text-sm font-medium text-gray-600 hover:bg-green-100 transition-colors flex items-center">
+                        <i class="fas fa-users w-6 text-center mr-2"></i> Membres & Adhésion
+                    </button>
+                </li>
+                <li>
+                    <button onclick="router('governance')" id="nav-governance" class="nav-item w-full text-left px-6 py-3 text-sm font-medium text-gray-600 hover:bg-green-100 transition-colors flex items-center">
+                        <i class="fas fa-sitemap w-6 text-center mr-2"></i> Gouvernance
+                    </button>
+                </li>
+                <li>
+                    <button onclick="router('rules')" id="nav-rules" class="nav-item w-full text-left px-6 py-3 text-sm font-medium text-gray-600 hover:bg-green-100 transition-colors flex items-center">
+                        <i class="fas fa-balance-scale w-6 text-center mr-2"></i> Règles & Procédures
+                    </button>
+                </li>
+            </ul>
+        </nav>
+        <div class="p-4 border-t border-gray-200 bg-gray-50">
+            <div class="text-xs text-gray-500 text-center">
+                <p>Basé sur les statuts officiels</p>
+                <p class="mt-1">Siège: UPAG, Gonaïves</p>
+            </div>
+        </div>
+    </aside>
+
+    <!-- Mobile Header -->
+    <div class="md:hidden fixed w-full bg-white border-b border-gray-200 z-20 flex justify-between items-center p-4">
+        <span class="font-bold text-green-700">ADIP - Statuts</span>
+        <button onclick="toggleMobileMenu()" class="text-gray-600 focus:outline-none">
+            <i class="fas fa-bars text-xl"></i>
+        </button>
+    </div>
+
+    <!-- Mobile Menu Overlay -->
+    <div id="mobile-menu" class="fixed inset-0 bg-gray-800 bg-opacity-75 z-30 hidden md:hidden" onclick="toggleMobileMenu()">
+        <div class="bg-white w-64 h-full shadow-lg p-4" onclick="event.stopPropagation()">
+            <div class="mb-6 font-bold text-xl text-green-700">Menu</div>
+            <nav class="space-y-2">
+                <button onclick="router('dashboard'); toggleMobileMenu()" class="block w-full text-left px-4 py-3 rounded hover:bg-green-100">Vue d'ensemble</button>
+                <button onclick="router('members'); toggleMobileMenu()" class="block w-full text-left px-4 py-3 rounded hover:bg-green-100">Membres & Adhésion</button>
+                <button onclick="router('governance'); toggleMobileMenu()" class="block w-full text-left px-4 py-3 rounded hover:bg-green-100">Gouvernance</button>
+                <button onclick="router('rules'); toggleMobileMenu()" class="block w-full text-left px-4 py-3 rounded hover:bg-green-100">Règles & Procédures</button>
+            </nav>
+        </div>
+    </div>
+
+    <!-- Main Content Area -->
+    <main class="flex-1 overflow-y-auto bg-white pt-16 md:pt-0 scroll-smooth">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8" id="main-container"></div>
+    </main>
+
+    <script>
+        const appData = {
+            identity: {
+                name: "Alliance Dynamique pour l'innovation et le progrès",
+                acronym: "ADIP",
+                mission: "Fédérer un réseau de collaboration et de partage de connaissances pour promouvoir l'innovation, la formation continue et l'engagement social.",
+                location: "Université Publique de l'Artibonite aux Gonaïves (UPAG)",
+                legalStatus: "Droit privé à but non lucratif",
+                duration: "Indéterminée"
+            },
+            members: [
+                { type: "Fondateurs", desc: "Initiateurs de l'organisation.", icon: "fa-certificate" },
+                { type: "Adhérents", desc: "Membres actifs participant aux activités.", icon: "fa-user-check" },
+                { type: "Observateurs", desc: "Inclut les mineurs scolarisés (secondaire).", icon: "fa-eye" },
+                { type: "Donateurs", desc: "Contributeurs financiers ou matériels.", icon: "fa-hand-holding-heart" },
+                { type: "Honoraires", desc: "Titre honorifique pour services rendus.", icon: "fa-medal" }
+            ],
+            committee: [
+                { role: "Coordonnateur", tasks: "Représentant légal, Préside l'AG, Signe les actes civils.", icon: "fa-gavel" },
+                { role: "Vice-Coordonnateur", tasks: "Remplace le coordonnateur en cas d'absence.", icon: "fa-user-shield" },
+                { role: "Secrétaire", tasks: "Gestion des archives, PV de réunions, Correspondance.", icon: "fa-feather-alt" },
+                { role: "Trésorier", tasks: "Gestion financière, Rapports annuels, Recouvrement.", icon: "fa-coins" },
+                { role: "Resp. Communication", tasks: "Relations presse, Visibilité publique, Porte-parole.", icon: "fa-bullhorn" },
+                { role: "Conseiller", tasks: "Conformité légale, Veille statutaire.", icon: "fa-balance-scale-right" },
+                { role: "Délégué", tasks: "Missions spécifiques déléguées par le comité.", icon: "fa-briefcase" }
+            ],
+            voting: {
+                standard: { title: "Décisions Courantes", quorum: 50, label: "Majorité Absolue (50% + 1)" },
+                major: { title: "Modifications Statuts/Cotisations", quorum: 66.6, label: "Majorité Qualifiée (2/3)" }
+            }
+        };
+
+        let currentChartInstance = null;
+
+        function router(viewName) {
+            document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active', 'bg-green-100', 'text-green-700', 'border-l-4', 'border-green-700'));
+            const activeBtn = document.getElementById(`nav-${viewName}`);
+            if(activeBtn) { activeBtn.classList.add('active'); }
+            const container = document.getElementById('main-container'); container.innerHTML = '';
+            document.querySelector('main').scrollTop = 0;
+
+            switch(viewName) {
+                case 'dashboard': renderDashboard(container); break;
+                case 'members': renderMembers(container); break;
+                case 'governance': renderGovernance(container); break;
+                case 'rules': renderRules(container); break;
+                default: renderDashboard(container);
+            }
+        }
+
+        // --- RENDER DASHBOARD ---
+        function renderDashboard(container) {
+            const html = `
+            <div class="animate-fade-in-up">
+                <header class="mb-8">
+                    <h2 class="text-3xl font-bold text-gray-900">Bienvenue sur le portail de l'ADIP</h2>
+                    <p class="mt-2 text-lg text-gray-600">Exploration interactive des statuts et règlements de l'Alliance.</p>
+                </header>
+
+                <!-- Mission Hero Card -->
+                <div class="bg-gradient-to-r from-green-700 to-green-600 rounded-2xl shadow-xl p-8 mb-8 text-white relative overflow-hidden">
+                    <div class="relative z-10">
+                        <h3 class="text-xl font-semibold uppercase tracking-wider mb-2">Notre Mission</h3>
+                        <p class="text-2xl md:text-3xl font-light leading-relaxed">"${appData.identity.mission}"</p>
+                        <div class="mt-6 flex flex-wrap gap-4">
+                            <span class="inline-flex items-center px-3 py-1 rounded-full bg-green-500 bg-opacity-50 text-white text-sm"><i class="fas fa-university mr-2"></i> ${appData.identity.location}</span>
+                            <span class="inline-flex items-center px-3 py-1 rounded-full bg-white text-green-700 text-sm"><i class="fas fa-infinity mr-2"></i> Durée: ${appData.identity.duration}</span>
+                        </div>
+                    </div>
+                    <div class="absolute right-0 bottom-0 opacity-10 transform translate-x-10 translate-y-10">
+                        <i class="fas fa-network-wired text-9xl"></i>
+                    </div>
+                </div>
+
+                <!-- Key Metrics Grid -->
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                    <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100 flex items-center card-hover transition-all">
+                        <div class="p-3 bg-green-100 rounded-full text-green-700 mr-4">
+                            <i class="fas fa-users text-xl"></i>
+                        </div>
+                        <div>
+                            <p class="text-sm text-gray-500 font-medium">Catégories de Membres</p>
+                            <p class="text-2xl font-bold text-gray-900">5 Types</p>
+                        </div>
+                    </div>
+                    <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100 flex items-center card-hover transition-all">
+                        <div class="p-3 bg-green-100 rounded-full text-green-700 mr-4">
+                            <i class="fas fa-calendar-check text-xl"></i>
+                        </div>
+                        <div>
+                            <p class="text-sm text-gray-500 font-medium">Mandat Exécutif</p>
+                            <p class="text-2xl font-bold text-gray-900">4 Ans</p>
+                        </div>
+                    </div>
+                    <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100 flex items-center card-hover transition-all">
+                        <div class="p-3 bg-green-100 rounded-full text-green-700 mr-4">
+                            <i class="fas fa-handshake text-xl"></i>
+                        </div>
+                        <div>
+                            <p class="text-sm text-gray-500 font-medium">Assemblées Générales</p>
+                            <p class="text-2xl font-bold text-gray-900">2x / An</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Photo Gallery -->
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mt-8">
+                    <img src="assets/photo1.jpg" alt="Photo 1" class="rounded-xl shadow-sm w-full h-48 object-cover">
+                    <img src="assets/photo2.jpg" alt="Photo 2" class="rounded-xl shadow-sm w-full h-48 object-cover">
+                    <img src="assets/photo3.jpg" alt="Photo 3" class="rounded-xl shadow-sm w-full h-48 object-cover">
+                </div>
+            </div>
+            `;
+            container.innerHTML = html;
+        }
+
+        // --- MEMBERS VIEW (modifié pour vert)
+        function renderMembers(container) {
+            const html = `
+            <div class="animate-fade-in-up">
+                <header class="mb-6">
+                    <h2 class="text-3xl font-bold text-gray-900">Membres & Adhésion</h2>
+                    <p class="mt-2 text-gray-600">L'ADIP est ouverte aux professionnels, universitaires et étudiants partageant ses valeurs.</p>
+                </header>
+
+                <div class="bg-white rounded-xl shadow-md border border-gray-200 overflow-hidden mb-8">
+                    <div class="bg-green-50 px-6 py-4 border-b border-gray-200">
+                        <h3 class="font-bold text-green-700"><i class="fas fa-clipboard-check mr-2"></i>Vérificateur d'Éligibilité</h3>
+                    </div>
+                    <div class="p-6 grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
+                        <div class="space-y-4">
+                            <label class="flex items-center space-x-3 p-3 border rounded-lg hover:bg-green-50 cursor-pointer">
+                                <input type="checkbox" id="check-age" class="form-checkbox h-5 w-5 text-green-600" onchange="checkEligibility()">
+                                <span class="text-gray-700">J'ai 18 ans ou plus (ou secondaire pour observateur)</span>
+                            </label>
+                            <label class="flex items-center space-x-3 p-3 border rounded-lg hover:bg-green-50 cursor-pointer">
+                                <input type="checkbox" id="check-loc" class="form-checkbox h-5 w-5 text-green-600" onchange="checkEligibility()">
+                                <span class="text-gray-700">Je réside dans l'Artibonite (Gonaïves ou autres)</span>
+                            </label>
+                            <label class="flex items-center space-x-3 p-3 border rounded-lg hover:bg-green-50 cursor-pointer">
+                                <input type="checkbox" id="check-train" class="form-checkbox h-5 w-5 text-green-600" onchange="checkEligibility()">
+                                <span class="text-gray-700">J'ai suivi au moins 2 formations ADIP</span>
+                            </label>
+                            <label class="flex items-center space-x-3 p-3 border rounded-lg hover:bg-green-50 cursor-pointer">
+                                <input type="checkbox" id="check-fee" class="form-checkbox h-5 w-5 text-green-600" onchange="checkEligibility()">
+                                <span class="text-gray-700">Je suis prêt à payer 500 Gourdes</span>
+                            </label>
+                        </div>
+                        <div id="eligibility-result" class="text-center p-6 bg-gray-100 rounded-xl">
+                            <i class="fas fa-question-circle text-4xl text-gray-400 mb-3"></i>
+                            <p class="text-gray-500 font-medium">Cochez les cases pour vérifier votre statut.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <h3 class="text-xl font-bold text-gray-800 mb-4">Les 5 Catégories de Membres</h3>
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                    ${appData.members.map(m => `
+                        <div class="bg-white p-6 rounded-lg shadow-sm border border-gray-100 hover:border-green-500 transition-all group">
+                            <div class="w-12 h-12 rounded-full bg-green-50 text-green-600 flex items-center justify-center mb-4 group-hover:bg-green-600 group-hover:text-white transition-colors">
+                                <
